@@ -1,0 +1,65 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "StoryRaw",
+  "description": "Сообщение в топике stories.raw. Продюсер: Parser Service (Python). Консьюмер: AI Worker (C#).",
+
+  "topic": "stories.raw",
+
+  "type": "object",
+  "required": ["story_id", "job_id", "text", "source_url", "parsed_at"],
+
+  "properties": {
+
+    "story_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Уникальный ID истории, совпадает с _id документа в MongoDB"
+    },
+
+    "job_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "ID задачи парсинга из которой получена история. Нужен для Saga — AI Worker включает его в ответ чтобы можно было отследить цепочку."
+    },
+
+    "text": {
+      "type": "string",
+      "minLength": 100,
+      "description": "Полный текст истории. Минимум 100 символов — более короткие отфильтрованы Parser'ом."
+    },
+
+    "source_url": {
+      "type": "string",
+      "format": "uri",
+      "description": "URL страницы откуда взята история"
+    },
+
+    "source_title": {
+      "type": "string",
+      "description": "Заголовок истории на сайте-источнике (если есть)"
+    },
+
+    "parsed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Время парсинга в формате ISO 8601, например 2025-01-15T10:30:00Z"
+    },
+
+    "retry_count": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "Количество предыдущих попыток обработки. AI Worker увеличивает это поле при повторной публикации в случае ошибки. Если retry_count >= 3 — сообщение отправляется в dead letter queue и не обрабатывается повторно."
+    }
+  },
+
+  "example": {
+    "story_id":     "f47ac10b-58cc-4372-a567-0e02b2c3d479",
+    "job_id":       "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+    "text":         "В 1980 году в небольшом городке США произошло странное событие. Местный житель Джон каждое утро выходил на прогулку ровно в 6:00 и возвращался через час. Однажды соседи заметили что он вернулся через 10 минут, зашёл домой и больше не выходил несколько дней...",
+    "source_url":   "https://example-stories.com/criminal/story-123",
+    "source_title": "Загадочное исчезновение из Огайо",
+    "parsed_at":    "2025-01-15T10:30:00Z",
+    "retry_count":  0
+  }
+}
