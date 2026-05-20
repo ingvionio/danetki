@@ -101,6 +101,30 @@ services:
       timeout: 5s
       retries: 5
 
+  ollama:
+    image: ollama/ollama:latest
+    container_name: danetka-ollama
+    ports:
+      - "11434:11434"   # для тестирования из хост-машины (curl)
+    volumes:
+      - ollama-data:/root/.ollama   # кэш скачанных моделей
+    networks:
+      - danetka-net
+    # Раскомментируй блок ниже на машинах с NVIDIA GPU.
+    # Требуется установленный NVIDIA Container Toolkit.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
   # --------------------------------------------------------------
   #  СЕРВИСЫ
   # --------------------------------------------------------------
@@ -184,13 +208,16 @@ services:
       KAFKA_CONSUMER_GROUP: ai-worker-group
       KAFKA_TOPIC_INPUT: stories.raw
       PUZZLE_SERVICE_ADDR: puzzle-service:50052
-      OPENAI_API_KEY: ${OPENAI_API_KEY}   # задаётся в .env файле
-      OPENAI_MODEL: gpt-4o-mini
+      LLM_PROVIDER: ollama
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:3b}   # задаётся в .env, см. .env.example
     depends_on:
       kafka:
         condition: service_healthy
       puzzle-service:
         condition: service_started
+      ollama:
+        condition: service_healthy
     networks:
       - danetka-net
     restart: on-failure
@@ -229,3 +256,4 @@ networks:
 volumes:
   postgres-data:
   mongodb-data:
+  ollama-data:
