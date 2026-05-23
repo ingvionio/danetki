@@ -207,6 +207,7 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       KAFKA_CONSUMER_GROUP: ai-worker-group
       KAFKA_TOPIC_INPUT: stories.raw
+      KAFKA_TOPIC_DLQ: stories.dlq
       PUZZLE_SERVICE_ADDR: puzzle-service:50052
       LLM_PROVIDER: ollama
       OLLAMA_URL: http://ollama:11434
