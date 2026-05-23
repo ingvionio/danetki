@@ -147,3 +147,7 @@ x86/
 ### Project-specific
 # AI Worker runtime artifacts (LLM input/output capture)
 services/ai-worker/logs/
+
+# Local dev utilities (not for repo)
+codebase.md
+generate_codebase.sh
