@@ -153,8 +153,8 @@ services:
 
   auth-service:
     build:
-      context: ./services/auth-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/auth-service/Dockerfile
     container_name: danetka-auth
     # порт НЕ пробрасывается наружу — только внутри Docker-сети
     environment:
@@ -166,7 +166,9 @@ services:
       DB_USER: danetka
       DB_PASSWORD: danetka_secret
       JWT_SECRET: change_me_in_production
-      JWT_EXPIRES_HOURS: 24
+      JWT_ISSUER: Danetka.Auth
+      JWT_AUDIENCE: Danetka.Gateway
+      JWT_EXPIRES_HOURS: 1
     depends_on:
       postgres:
         condition: service_healthy
@@ -240,7 +242,8 @@ services:
 
   parser-service:
     build:
-      context: ./services/parser-service
+      # В git папка с большой буквы — BuildKit на это чувствителен.
+      context: ./Services/parser-service
       dockerfile: Dockerfile
     container_name: danetka-parser
     environment:
