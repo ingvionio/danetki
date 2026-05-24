@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using PuzzleService.Data;
 using PuzzleService.Services;
+using Consul;
 
 AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
 
@@ -14,6 +15,13 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // Добавляем поддержку gRPC в контейнер зависимостей
 builder.Services.AddGrpc();
+
+var consulAddress = builder.Configuration["CONSUL_ADDR"] ?? "consul:8500";
+builder.Services.AddSingleton<IConsulClient, ConsulClient>(p => new ConsulClient(consulConfig =>
+{
+    consulConfig.Address = new Uri($"http://{consulAddress}");
+}));
+builder.Services.AddHostedService<ConsulHostedService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
