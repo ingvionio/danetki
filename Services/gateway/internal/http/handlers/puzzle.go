@@ -23,11 +23,7 @@ func NewPuzzleHandler(reg discovery.Registry) *PuzzleHandler {
 }
 
 func (h *PuzzleHandler) HandlePuzzle(w http.ResponseWriter, r *http.Request) {
-	addr, error := h.reg.Discover("puzzle-service")
-	if error != nil {
-		http.Error(w, "Puzzle service unavailable", http.StatusServiceUnavailable)
-		return
-	}
+	addr := "danetka-puzzle:50052"
 
 	conn, error := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {
@@ -40,7 +36,6 @@ func (h *PuzzleHandler) HandlePuzzle(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(r.Context(), time.Second*5)
 	defer cancel()
 
-	// GET /puzzle/random
 	if r.Method == http.MethodGet && r.URL.Path == "/puzzle/random" {
 		grpcResp, error := client.GetRandomPuzzle(ctx, &puzzle.GetRandomPuzzleRequest{})
 		if error != nil {
@@ -52,7 +47,6 @@ func (h *PuzzleHandler) HandlePuzzle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// GET /puzzle/:id
 	if r.Method == http.MethodGet && strings.HasPrefix(r.URL.Path, "/puzzle/") {
 		id := strings.TrimPrefix(r.URL.Path, "/puzzle/")
 		if id == "" {

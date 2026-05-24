@@ -165,7 +165,7 @@ services:
       DB_NAME: auth_db
       DB_USER: danetka
       DB_PASSWORD: danetka_secret
-      JWT_SECRET: change_me_in_production
+      JWT_SECRET: change_me_in_production_super_secret_key_32_bytes
       JWT_ISSUER: Danetka.Auth
       JWT_AUDIENCE: Danetka.Gateway
       JWT_EXPIRES_HOURS: 1
@@ -180,8 +180,8 @@ services:
 
   puzzle-service:
     build:
-      context: ./services/puzzle-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Services/puzzle-service/Dockerfile
     container_name: danetka-puzzle
     environment:
       GRPC_PORT: 50052
@@ -242,21 +242,20 @@ services:
 
   parser-service:
     build:
-      # В git папка с большой буквы — BuildKit на это чувствителен.
       context: ./Services/parser-service
       dockerfile: Dockerfile
     container_name: danetka-parser
     environment:
       GRPC_PORT: 50053
       CONSUL_ADDR: consul:8500
-      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092 
       KAFKA_TOPIC_OUTPUT: stories.raw
       MONGO_URI: mongodb://danetka:danetka_secret@mongodb:27017/parser_db?authSource=admin
       MONGO_DB: parser_db
     depends_on:
-      mongodb:
-        condition: service_healthy
       kafka:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
       consul:
         condition: service_healthy

@@ -38,13 +38,9 @@ func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addr, error := h.reg.Discover("auth-service")
-	if error != nil {
-		http.Error(w, "Auth service unavailable", http.StatusServiceUnavailable)
-		return
-	}
+	authServiceAddr := "danetka-auth:8080"
 
-	conn, error := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, error := grpc.Dial(authServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return
@@ -85,13 +81,9 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	addr, error := h.reg.Discover("auth-service")
-	if error != nil {
-		http.Error(w, "Auth service unavailable", http.StatusServiceUnavailable)
-		return
-	}
+	authServiceAddr := "danetka-auth:8080"
 
-	conn, error := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	conn, error := grpc.Dial(authServiceAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {
 		http.Error(w, "Internal error", http.StatusInternalServerError)
 		return

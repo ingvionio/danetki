@@ -16,7 +16,6 @@ import (
 func AuthMiddleware(reg discovery.Registry) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			// Пропускаем публичные эндпоинты авторизации
 			if strings.HasPrefix(r.URL.Path, "/auth/register") || strings.HasPrefix(r.URL.Path, "/auth/login") {
 				next.ServeHTTP(w, r)
 				return
@@ -30,12 +29,7 @@ func AuthMiddleware(reg discovery.Registry) func(http.Handler) http.Handler {
 
 			token := strings.TrimPrefix(authHeader, "Bearer ")
 
-			// Находим Auth Service через Consul
-			addr, error := reg.Discover("auth-service")
-			if error != nil {
-				http.Error(w, "Auth service unavailable", http.StatusServiceUnavailable)
-				return
-			}
+			addr := "danetka-auth:8080"
 
 			conn, error := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 			if error != nil {
@@ -54,7 +48,6 @@ func AuthMiddleware(reg discovery.Registry) func(http.Handler) http.Handler {
 				return
 			}
 
-			// Прокидываем user_id и email дальше в контексте, если хэндлерам это понадобится
 			ctx = context.WithValue(r.Context(), "user_id", resp.UserId)
 			ctx = context.WithValue(ctx, "email", resp.Email)
 

@@ -33,16 +33,11 @@ func (h *ParserHandler) Start(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if error := json.NewDecoder(r.Body).Decode(&req); error != nil {
-		// Если боди пустое, пускай будут дефолты
 		req.Limit = 0
 		req.SourceUrl = ""
 	}
 
-	addr, error := h.reg.Discover("parser-service")
-	if error != nil {
-		http.Error(w, "Parser service unavailable", http.StatusServiceUnavailable)
-		return
-	}
+	addr := "parser-service:50053"
 
 	conn, error := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {
@@ -76,11 +71,7 @@ func (h *ParserHandler) Status(w http.ResponseWriter, r *http.Request) {
 
 	jobID := r.URL.Query().Get("job_id")
 
-	addr, error := h.reg.Discover("parser-service")
-	if error != nil {
-		http.Error(w, "Parser service unavailable", http.StatusServiceUnavailable)
-		return
-	}
+	addr := "parser-service:50053"
 
 	conn, error := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if error != nil {

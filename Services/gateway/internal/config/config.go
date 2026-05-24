@@ -22,10 +22,9 @@ func Load() *Config {
 
 	consulAddr := os.Getenv("CONSUL_ADDR")
 	if consulAddr == "" {
-		consulAddr = "consul:8500" // Внутри Docker-сети достучимся по имени сервиса
+		consulAddr = "consul:8500"
 	}
 
-	// Парсим порт в int для Consul. Если что-то пойдет не так, бахнем дефолтные 8000
 	p, err := strconv.Atoi(port)
 	if err != nil {
 		p = 8000
@@ -36,7 +35,7 @@ func Load() *Config {
 		ConsulAddr:  consulAddr,
 		ServiceName: "gateway",
 		ServiceID:   "gateway-1",
-		ServiceHost: "gateway", // Имя контейнера в docker-compose
+		ServiceHost: "gateway",
 		ServicePort: p,
 	}
 }

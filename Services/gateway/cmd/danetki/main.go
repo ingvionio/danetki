@@ -12,14 +12,12 @@ import (
 func main() {
 	cfg := config.Load()
 
-	// Инициализируем реестр Consul
 	registry, err := discovery.NewConsulRegistry(cfg.ConsulAddr)
 	if err != nil {
 		log.Fatalf("Failed to connect to Consul: %v", err)
 	}
 	log.Printf("Connected to Consul at %s", cfg.ConsulAddr)
 
-	// Регистрируем Гейтвей в Consul
 	err = registry.Register(cfg.ServiceName, cfg.ServiceID, cfg.ServiceHost, cfg.ServicePort)
 	if err != nil {
 		log.Printf("Warning: Failed to register in Consul: %v", err)
@@ -27,7 +25,6 @@ func main() {
 		log.Printf("Successfully registered in Consul as '%s'", cfg.ServiceName)
 	}
 
-	// Собираем роутер с хэндлерами и мидлварью
 	router := gatewayHttp.NewRouter(registry)
 
 	log.Printf("API Gateway is running on port :%s", cfg.Port)
