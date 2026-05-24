@@ -74,8 +74,11 @@ class ParseJobService:
         started_at: int,
     ) -> None:
         try:
-            scraper = ScraperRegistry.get_scraper(source_url, self._settings)
-            stories = await scraper.fetch_stories(limit=limit)
+            stories = await ScraperRegistry.fetch_stories(
+                source_url=source_url,
+                limit=limit,
+                settings=self._settings,
+            )
             queued_count = 0
             skipped_count = 0
 

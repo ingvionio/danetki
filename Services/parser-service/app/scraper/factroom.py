@@ -13,7 +13,7 @@ from app.scraper.validator import ParsedStory, validate_story
 logger = logging.getLogger(__name__)
 
 FACTROOM_BASE_URL: Final[str] = "https://factroom.ru"
-FACTROOM_LIST_PATH: Final[str] = "/category/crime/"
+FACTROOM_LIST_PATH: Final[str] = "/"
 
 
 class FactroomScraper:
@@ -21,13 +21,13 @@ class FactroomScraper:
         self._settings = settings
         self._headers = {"User-Agent": settings.scraper_user_agent}
 
-    async def fetch_stories(self, limit: int) -> list[ParsedStory]:
+    async def fetch_stories(self, limit: int, source_url: str = "") -> list[ParsedStory]:
         async with httpx.AsyncClient(
             timeout=self._settings.http_timeout,
             headers=self._headers,
             follow_redirects=True,
         ) as client:
-            list_url = urljoin(FACTROOM_BASE_URL, FACTROOM_LIST_PATH)
+            list_url = self._resolve_list_url(source_url)
             response = await client.get(list_url)
             response.raise_for_status()
 
@@ -45,6 +45,13 @@ class FactroomScraper:
                 stories.append(story)
 
             return stories
+
+    def _resolve_list_url(self, source_url: str) -> str:
+        normalized_url = source_url.strip()
+        if normalized_url:
+            return normalized_url
+
+        return urljoin(FACTROOM_BASE_URL, FACTROOM_LIST_PATH)
 
     def _extract_article_links(self, html: str) -> list[str]:
         soup = BeautifulSoup(html, "html.parser")
@@ -119,3 +126,13 @@ class ScraperRegistry:
             raise ValueError(f"Unsupported source: {source_url}")
 
         return FactroomScraper(settings)
+
+    @classmethod
+    async def fetch_stories(
+        cls,
+        source_url: str,
+        limit: int,
+        settings: Settings,
+    ) -> list[ParsedStory]:
+        scraper = cls.get_scraper(source_url, settings)
+        return await scraper.fetch_stories(limit=limit, source_url=source_url)
