@@ -240,7 +240,8 @@ services:
 
   parser-service:
     build:
-      context: ./services/parser-service
+      # В git папка с большой буквы — BuildKit на это чувствителен.
+      context: ./Services/parser-service
       dockerfile: Dockerfile
     container_name: danetka-parser
     environment:
