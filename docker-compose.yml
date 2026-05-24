@@ -200,6 +200,19 @@ services:
       - danetka-net
     restart: on-failure
 
+  frontend:
+    build:
+      context: ./Services/frontend
+      dockerfile: Dockerfile
+    container_name: danetka-frontend
+    ports:
+      - "3000:80" # Пробрасываем внутренний 80 порт Nginx на внешний порт 3000
+    restart: always
+    networks:
+      - danetka-net
+    depends_on:
+      - gateway
+
   ai-worker:
     build:
       # Context = корень репо: Dockerfile нужен доступ к contracts/ для protobuf-кодогенерации.
