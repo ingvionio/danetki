@@ -37,6 +37,9 @@ function App() {
           path="/register" 
           element={!isAuthenticated ? <RegisterPage /> : <Navigate to="/" />} 
         />
+
+        {/* Страница, загружающая конкретный пазл */}
+        <Route path="/puzzle/:id" element={<MainPage />} />
         
         {/* Все остальные ссылки кидают на главную */}
         <Route path="*" element={<Navigate to="/" />} />
