@@ -4,7 +4,7 @@
     
     # Копируем файлы конфигурации npm
     COPY package*.json ./
-    RUN npm ci
+    RUN npm install
     
     # Копируем исходный код и собираем продакшн-билд
     COPY . .
