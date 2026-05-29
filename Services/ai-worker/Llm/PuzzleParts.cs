@@ -12,3 +12,5 @@ public class PuzzleParts
         !string.IsNullOrWhiteSpace(OpenPart) &&
         !string.IsNullOrWhiteSpace(HiddenPart);
 }
+
+public record EvaluationResult(int Score, string Reason);

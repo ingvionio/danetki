@@ -181,11 +181,24 @@ public class Worker : BackgroundService
         // --- 3. LLM ---
         var sw = Stopwatch.StartNew();
         PuzzleParts? parts = null;
+        EvaluationResult? eval = null;
         string? error = null;
 
         try
         {
             parts = await _llm.SplitStoryAsync(msg.Text, ct);
+
+            eval = await _llm.EvaluatePuzzleAsync(msg.Text, parts, ct);
+            _logger.LogInformation(
+                "Puzzle evaluated: score={Score} reason={Reason}",
+                eval.Score, eval.Reason);
+
+            if (eval.Score < 7)
+            {
+                throw new InvalidOperationException(
+                    $"LLM Quality too low ({eval.Score}/10): {eval.Reason}");
+            }
+
             sw.Stop();
             _logger.LogInformation(
                 "LLM ok: story={StoryId} openLen={OpenLen} hiddenLen={HiddenLen} took={Ms}ms",
@@ -199,7 +212,7 @@ public class Worker : BackgroundService
                 "LLM failed: story={StoryId} took={Ms}ms",
                 msg.StoryId, sw.ElapsedMilliseconds);
 
-            await LogDatasetAsync(msg, parts, error, sw.ElapsedMilliseconds, ct);
+            await LogDatasetAsync(msg, parts, eval, error, sw.ElapsedMilliseconds, ct);
             return await TryRequeueAsync(producer, topicMain, msg, ct);
         }
 
@@ -243,7 +256,7 @@ public class Worker : BackgroundService
                 msg.StoryId);
         }
 
-        await LogDatasetAsync(msg, parts, error, sw.ElapsedMilliseconds, ct);
+        await LogDatasetAsync(msg, parts, eval, error, sw.ElapsedMilliseconds, ct);
 
         if (puzzleSaved)
         {
@@ -297,7 +310,12 @@ public class Worker : BackgroundService
     }
 
     private async Task LogDatasetAsync(
-        StoryRawMessage msg, PuzzleParts? parts, string? error, long durationMs, CancellationToken ct)
+        StoryRawMessage msg,
+        PuzzleParts? parts,
+        EvaluationResult? eval,
+        string? error,
+        long durationMs,
+        CancellationToken ct)
     {
         await _datasetLogger.LogAsync(new DatasetEntry(
             Timestamp:  DateTimeOffset.UtcNow,
@@ -307,6 +325,8 @@ public class Worker : BackgroundService
             OpenPart:   parts?.OpenPart,
             HiddenPart: parts?.HiddenPart,
             Error:      error,
-            DurationMs: durationMs), ct);
+            DurationMs: durationMs,
+            Score:      eval?.Score,
+            EvalReason: eval?.Reason), ct);
     }
 }

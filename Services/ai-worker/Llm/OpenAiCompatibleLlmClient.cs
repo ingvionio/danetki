@@ -90,6 +90,49 @@ public class OpenAiCompatibleLlmClient : ILlmClient
         return parts;
     }
 
+    public async Task<EvaluationResult> EvaluatePuzzleAsync(string storyText, PuzzleParts parts, CancellationToken ct)
+    {
+        var userMessage = BuildEvaluationUserMessage(storyText, parts);
+
+        var request = new ChatRequest(
+            Model: _model,
+            Messages:
+            [
+                new ChatMessage("system", Prompts.EvaluatePuzzleSystemPrompt),
+                new ChatMessage("user", userMessage),
+            ],
+            Temperature: 0.2,
+            MaxTokens: 512,
+            ResponseFormat: new ResponseFormat("json_object"));
+
+        _logger.LogDebug("Evaluating puzzle via {Url}: model={Model}", _baseUrl, _model);
+
+        using var msg = new HttpRequestMessage(HttpMethod.Post, $"{_baseUrl}/chat/completions")
+        {
+            Content = JsonContent.Create(request, options: JsonOpts),
+        };
+        msg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _apiKey);
+
+        var resp = await _http.SendAsync(msg, ct);
+        resp.EnsureSuccessStatusCode();
+
+        var chat = await resp.Content.ReadFromJsonAsync<ChatResponse>(JsonOpts, ct)
+            ?? throw new InvalidOperationException("OpenAI-compatible API returned null evaluation body");
+
+        if (chat.Choices is null || chat.Choices.Length == 0)
+            throw new InvalidOperationException("Evaluation response contains no choices");
+
+        var content = chat.Choices[0].Message.Content;
+        var json    = ExtractJson(content);
+
+        return JsonSerializer.Deserialize<EvaluationResult>(json, JsonOpts)
+            ?? throw new InvalidOperationException(
+                $"Could not deserialize EvaluationResult. Raw: {content}");
+    }
+
+    private static string BuildEvaluationUserMessage(string storyText, PuzzleParts parts) =>
+        $"Исходный текст: {storyText}\n\nСгенерированная данетка: {JsonSerializer.Serialize(parts, JsonOpts)}";
+
     private static string ExtractJson(string text)
     {
         text = text.Trim();

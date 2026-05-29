@@ -90,6 +90,49 @@ public class GigaChatLlmClient : ILlmClient
         return parts;
     }
 
+    public async Task<EvaluationResult> EvaluatePuzzleAsync(string storyText, PuzzleParts parts, CancellationToken ct)
+    {
+        var token = await GetAccessTokenAsync(ct);
+        var userMessage = BuildEvaluationUserMessage(storyText, parts);
+
+        var request = new GigaChatRequest(
+            Model: _model,
+            Messages:
+            [
+                new GigaChatMessage("system", Prompts.EvaluatePuzzleSystemPrompt),
+                new GigaChatMessage("user", userMessage),
+            ],
+            Temperature: 0.2,
+            MaxTokens: 512);
+
+        _logger.LogDebug("Evaluating puzzle via GigaChat: model={Model}", _model);
+
+        using var msg = new HttpRequestMessage(HttpMethod.Post, ChatUrl)
+        {
+            Content = JsonContent.Create(request, options: JsonOpts),
+        };
+        msg.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+        var resp = await _http.SendAsync(msg, ct);
+        resp.EnsureSuccessStatusCode();
+
+        var chat = await resp.Content.ReadFromJsonAsync<GigaChatResponse>(JsonOpts, ct)
+            ?? throw new InvalidOperationException("GigaChat returned null evaluation response body");
+
+        if (chat.Choices is null || chat.Choices.Length == 0)
+            throw new InvalidOperationException("GigaChat evaluation returned no choices");
+
+        var content = chat.Choices[0].Message.Content;
+        var json    = ExtractJson(content);
+
+        return JsonSerializer.Deserialize<EvaluationResult>(json, JsonOpts)
+            ?? throw new InvalidOperationException(
+                $"Could not deserialize EvaluationResult from GigaChat content. Raw: {content}");
+    }
+
+    private static string BuildEvaluationUserMessage(string storyText, PuzzleParts parts) =>
+        $"Исходный текст: {storyText}\n\nСгенерированная данетка: {JsonSerializer.Serialize(parts, JsonOpts)}";
+
     private async Task<string> GetAccessTokenAsync(CancellationToken ct)
     {
         // Быстрая проверка без захвата лока

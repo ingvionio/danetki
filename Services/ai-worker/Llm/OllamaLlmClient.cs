@@ -60,6 +60,36 @@ public class OllamaLlmClient : ILlmClient
         return parts;
     }
 
+    public async Task<EvaluationResult> EvaluatePuzzleAsync(string storyText, PuzzleParts parts, CancellationToken ct)
+    {
+        var userMessage = BuildEvaluationUserMessage(storyText, parts);
+
+        var request = new OllamaChatRequest(
+            Model: _model,
+            Messages:
+            [
+                new OllamaMessage("system", Prompts.EvaluatePuzzleSystemPrompt),
+                new OllamaMessage("user", userMessage),
+            ],
+            Stream: false,
+            Format: "json",
+            Options: new OllamaRequestOptions(Temperature: 0.2));
+
+        _logger.LogDebug("Evaluating puzzle via Ollama: model={Model}", _model);
+
+        var response = await _http.PostAsJsonAsync("/api/chat", request, JsonOpts, ct);
+        response.EnsureSuccessStatusCode();
+
+        var chat = await response.Content.ReadFromJsonAsync<OllamaChatResponse>(JsonOpts, ct)
+            ?? throw new InvalidOperationException("Ollama returned null evaluation response body");
+
+        return JsonSerializer.Deserialize<EvaluationResult>(chat.Message.Content, JsonOpts)
+            ?? throw new InvalidOperationException("Failed to deserialize EvaluationResult from Ollama content");
+    }
+
+    private static string BuildEvaluationUserMessage(string storyText, PuzzleParts parts) =>
+        $"Исходный текст: {storyText}\n\nСгенерированная данетка: {JsonSerializer.Serialize(parts, JsonOpts)}";
+
     // ----- DTOs для запроса/ответа Ollama API -----
 
     private record OllamaChatRequest(

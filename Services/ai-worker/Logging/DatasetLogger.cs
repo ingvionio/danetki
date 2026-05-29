@@ -57,4 +57,6 @@ public record DatasetEntry(
     string? OpenPart,
     string? HiddenPart,
     string? Error,
-    long DurationMs);
+    long DurationMs,
+    int? Score,
+    string? EvalReason);
