@@ -146,9 +146,6 @@ services:
     build:
       context: .
       dockerfile: Services/gateway/Dockerfile
-    container_name: danetka-gateway
-    ports:
-      - "8000:8000"     # единственный порт открытый наружу для клиентов
     environment:
       PORT: 8000
       CONSUL_ADDR: consul:8500
@@ -160,9 +157,23 @@ services:
     depends_on:
       consul:
         condition: service_healthy
+    deploy:
+      replicas: 2
     networks:
       - danetka-net
     restart: on-failure
+
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: danetka-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./infra/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - gateway
+    networks:
+      - danetka-net
 
   auth-service:
     build:
