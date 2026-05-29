@@ -101,6 +101,19 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    container_name: danetka-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - danetka-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   ollama:
     image: ollama/ollama:latest
     container_name: danetka-ollama
@@ -131,8 +144,8 @@ services:
 
   gateway:
     build:
-      context: ./services/gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Services/gateway/Dockerfile
     container_name: danetka-gateway
     ports:
       - "8000:8000"     # единственный порт открытый наружу для клиентов
@@ -154,7 +167,7 @@ services:
   auth-service:
     build:
       context: .
-      dockerfile: services/auth-service/Dockerfile
+      dockerfile: Services/auth-service/Dockerfile
     container_name: danetka-auth
     # порт НЕ пробрасывается наружу — только внутри Docker-сети
     environment:
@@ -179,9 +192,10 @@ services:
     restart: on-failure
 
   puzzle-service:
+    platform: linux/amd64
     build:
-      context: ./services/puzzle-service
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: Services/puzzle-service/Dockerfile
     container_name: danetka-puzzle
     environment:
       GRPC_PORT: 50052
@@ -191,8 +205,11 @@ services:
       DB_NAME: puzzle_db
       DB_USER: danetka
       DB_PASSWORD: danetka_secret
+      REDIS_CONNECTION: redis:6379
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       consul:
         condition: service_healthy

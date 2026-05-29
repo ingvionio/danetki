@@ -12,8 +12,8 @@ using PuzzleService.Data;
 namespace PuzzleService.Migrations
 {
     [DbContext(typeof(PuzzleDbContext))]
-    [Migration("20260524064150_InitUuidPuzzles")]
-    partial class InitUuidPuzzles
+    [Migration("20260529230403_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,26 +28,36 @@ namespace PuzzleService.Migrations
             modelBuilder.Entity("PuzzleService.Models.PuzzleEntity", b =>
                 {
                     b.Property<string>("Id")
-                        .HasColumnType("text");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasColumnName("id")
+                        .HasDefaultValueSql("gen_random_uuid()");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("NOW()");
 
                     b.Property<string>("HiddenPart")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("hidden_part");
 
                     b.Property<string>("OpenPart")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("open_part");
 
                     b.Property<string>("SourceUrl")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("source_url");
 
                     b.Property<string>("StoryId")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("text")
+                        .HasColumnName("story_id");
 
                     b.HasKey("Id");
 
