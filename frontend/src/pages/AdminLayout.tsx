@@ -12,6 +12,11 @@ const navItems = [
 export function AdminLayout() {
   const navigate = useNavigate()
   const clearAuth = useAuthStore((s) => s.clearAuth)
+  const role = useAuthStore((s) => s.role)
+
+  const visibleNavItems = navItems.filter(
+    (item) => item.to !== '/admin/parser' || role === 'Admin',
+  )
 
   function handleLogout() {
     clearAuth()
@@ -27,7 +32,7 @@ export function AdminLayout() {
         </div>
 
         <nav className="flex-1 space-y-1 p-4">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {visibleNavItems.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

@@ -63,6 +63,9 @@ class ParseJobService:
             return await self._mongo.get_job(job_id)
         return await self._mongo.get_latest_job()
 
+    async def list_jobs(self, page: int, page_size: int) -> tuple[list[dict[str, Any]], int]:
+        return await self._mongo.list_jobs(page, page_size)
+
     def _has_running_job(self) -> bool:
         return bool(self._tasks)
 

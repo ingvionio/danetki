@@ -1,7 +1,5 @@
 namespace Danetka.AiWorker.Llm;
 
-// Все промпты для LLM-клиентов. Вынесено отдельно чтобы все провайдеры
-// использовали один и тот же текст — тогда сравнение качества моделей честное.
 public static class Prompts
 {
     public const string SplitStorySystemPrompt = """

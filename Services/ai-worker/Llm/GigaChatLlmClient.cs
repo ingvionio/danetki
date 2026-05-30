@@ -4,15 +4,6 @@ using System.Text.Json;
 
 namespace Danetka.AiWorker.Llm;
 
-// Реализация ILlmClient против Sber GigaChat API.
-//
-// Особенности:
-// - Двухшаговая авторизация: сначала получаем access_token по
-//   "Authorization key" из кабинета разработчика, затем шлём чат-запрос.
-// - Токен живёт 30 минут, кэшируем его в инстансе клиента.
-// - Нет принудительного JSON-режима, поэтому модель может обернуть
-//   ответ в markdown-блок или добавить пояснений.
-//   ExtractJson() пробует найти ровно один JSON-объект в ответе.
 public class GigaChatLlmClient : ILlmClient
 {
     private static readonly JsonSerializerOptions JsonOpts = new()

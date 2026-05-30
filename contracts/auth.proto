@@ -5,77 +5,43 @@ package auth;
 option go_package = "github.com/danetka/contracts/auth";
 option csharp_namespace = "Danetka.Contracts.Auth";
 
-// ================================================================
-//  AUTH SERVICE
-//  Кто использует:
-//    - Gateway        → Register, Login (публичные эндпоинты)
-//    - Gateway        → ValidateToken (перед каждым закрытым запросом)
-// ================================================================
-
 service AuthService {
-  // Регистрация нового пользователя
   rpc Register (RegisterRequest) returns (AuthResponse);
-
-  // Логин существующего пользователя
   rpc Login (LoginRequest) returns (AuthResponse);
-
-  // Проверка JWT-токена — вызывается Gateway перед каждым запросом
   rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
-
-  // Получение профиля пользователя по ID
   rpc GetUser (GetUserRequest) returns (UserResponse);
 }
 
-// ----------------------------------------------------------------
-//  Register
-// ----------------------------------------------------------------
-
 message RegisterRequest {
-  string email    = 1;  // уникальный email
-  string password = 2;  // минимум 8 символов, хэшируется на стороне сервиса
-  string username = 3;  // отображаемое имя
+  string email    = 1;
+  string password = 2;  // min 8 chars, hashed server-side
+  string username = 3;
 }
-
-// ----------------------------------------------------------------
-//  Login
-// ----------------------------------------------------------------
 
 message LoginRequest {
   string email    = 1;
   string password = 2;
 }
 
-// ----------------------------------------------------------------
-//  Общий ответ на Register и Login
-// ----------------------------------------------------------------
-
 message AuthResponse {
-  string user_id    = 1;  // UUID пользователя
+  string user_id    = 1;
   string token      = 2;  // JWT access token
-  int64  expires_at = 3;  // Unix timestamp истечения токена
+  int64  expires_at = 3;
 }
 
-// ----------------------------------------------------------------
-//  ValidateToken
-// ----------------------------------------------------------------
-
 message ValidateTokenRequest {
-  string token = 1;  // JWT токен из заголовка Authorization: Bearer <token>
+  string token = 1;
 }
 
 message ValidateTokenResponse {
-  bool   valid   = 1;  // true если токен валиден и не истёк
-  string user_id = 2;  // UUID пользователя, пустая строка если invalid
-  string email   = 3;  // email пользователя, пустая строка если invalid
-  string role    = 4;  // роль пользователя, пустая строка если invalid
+  bool   valid   = 1;
+  string user_id = 2;
+  string email   = 3;
+  string role    = 4;
 }
 
-// ----------------------------------------------------------------
-//  GetUser
-// ----------------------------------------------------------------
-
 message GetUserRequest {
-  string user_id = 1;  // UUID пользователя
+  string user_id = 1;
 }
 
 enum Role {
@@ -87,16 +53,6 @@ message UserResponse {
   string user_id    = 1;
   string email      = 2;
   string username   = 3;
-  int64  created_at = 4;  // Unix timestamp регистрации
+  int64  created_at = 4;
   Role   role       = 5;
 }
-
-// ----------------------------------------------------------------
-//  Ошибки
-//  Используем стандартные gRPC status codes:
-//    INVALID_ARGUMENT  — невалидные поля запроса
-//    ALREADY_EXISTS    — email уже занят (Register)
-//    NOT_FOUND         — пользователь не найден
-//    UNAUTHENTICATED   — неверный пароль или токен
-//    INTERNAL          — внутренняя ошибка сервиса
-// ----------------------------------------------------------------

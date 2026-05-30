@@ -26,15 +26,7 @@ if _version_not_supported:
 
 
 class ParserServiceStub(object):
-    """================================================================
-    PARSER SERVICE
-    Кто использует:
-    - Gateway → StartParsing, GetStatus
-    Сам публикует сообщения в Kafka топик stories.raw
-    (см. contracts/kafka/story.raw.json)
-    ================================================================
-
-    """
+    """Parser gRPC service stub."""
 
     def __init__(self, channel):
         """Constructor.
@@ -52,31 +44,30 @@ class ParserServiceStub(object):
                 request_serializer=parser__pb2.GetStatusRequest.SerializeToString,
                 response_deserializer=parser__pb2.GetStatusResponse.FromString,
                 _registered_method=True)
+        self.ListJobs = channel.unary_unary(
+                '/parser.ParserService/ListJobs',
+                request_serializer=parser__pb2.ListJobsRequest.SerializeToString,
+                response_deserializer=parser__pb2.ListJobsResponse.FromString,
+                _registered_method=True)
 
 
 class ParserServiceServicer(object):
-    """================================================================
-    PARSER SERVICE
-    Кто использует:
-    - Gateway → StartParsing, GetStatus
-    Сам публикует сообщения в Kafka топик stories.raw
-    (см. contracts/kafka/story.raw.json)
-    ================================================================
-
-    """
+    """Parser gRPC service interface."""
 
     def StartParsing(self, request, context):
-        """Запустить парсинг — асинхронная фоновая задача
-        Клиент получает мгновенный ответ "принято в работу"
-        Реальный парсинг идёт в фоне через Kafka
-        """
+        """Start parsing job."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
     def GetStatus(self, request, context):
-        """Получить текущий статус фонового парсинга
-        """
+        """Get parsing job status."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def ListJobs(self, request, context):
+        """List parsing jobs."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -94,6 +85,11 @@ def add_ParserServiceServicer_to_server(servicer, server):
                     request_deserializer=parser__pb2.GetStatusRequest.FromString,
                     response_serializer=parser__pb2.GetStatusResponse.SerializeToString,
             ),
+            'ListJobs': grpc.unary_unary_rpc_method_handler(
+                    servicer.ListJobs,
+                    request_deserializer=parser__pb2.ListJobsRequest.FromString,
+                    response_serializer=parser__pb2.ListJobsResponse.SerializeToString,
+            ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
             'parser.ParserService', rpc_method_handlers)
@@ -103,15 +99,7 @@ def add_ParserServiceServicer_to_server(servicer, server):
 
  # This class is part of an EXPERIMENTAL API.
 class ParserService(object):
-    """================================================================
-    PARSER SERVICE
-    Кто использует:
-    - Gateway → StartParsing, GetStatus
-    Сам публикует сообщения в Kafka топик stories.raw
-    (см. contracts/kafka/story.raw.json)
-    ================================================================
-
-    """
+    """Parser gRPC service client."""
 
     @staticmethod
     def StartParsing(request,
@@ -157,6 +145,33 @@ class ParserService(object):
             '/parser.ParserService/GetStatus',
             parser__pb2.GetStatusRequest.SerializeToString,
             parser__pb2.GetStatusResponse.FromString,
+            options,
+            channel_credentials,
+            insecure,
+            call_credentials,
+            compression,
+            wait_for_ready,
+            timeout,
+            metadata,
+            _registered_method=True)
+
+    @staticmethod
+    def ListJobs(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(
+            request,
+            target,
+            '/parser.ParserService/ListJobs',
+            parser__pb2.ListJobsRequest.SerializeToString,
+            parser__pb2.ListJobsResponse.FromString,
             options,
             channel_credentials,
             insecure,

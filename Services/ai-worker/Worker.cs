@@ -227,6 +227,7 @@ public class Worker : BackgroundService
                 HiddenPart = parts.HiddenPart,
                 SourceUrl  = msg.SourceUrl,
                 StoryId    = msg.StoryId.ToString(),
+                JobId      = msg.JobId.ToString(),
             };
             var resp = await _puzzleClient.SavePuzzleAsync(request, cancellationToken: ct);
             puzzleSaved = true;

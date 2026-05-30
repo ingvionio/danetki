@@ -25,7 +25,7 @@ export function Login() {
       const response = await login(email, password)
       const role = decodeJwtRole(response.token)
       setAuth(response.token, role)
-      navigate('/admin')
+      navigate('/admin/puzzles')
     } catch {
       setError('Неверный email или пароль')
     } finally {

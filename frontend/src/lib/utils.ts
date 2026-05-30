@@ -25,3 +25,13 @@ export function formatUnixDate(timestamp: number): string {
     year: 'numeric',
   })
 }
+
+export function formatUnixDateTime(timestamp: number): string {
+  if (!timestamp) return '—'
+  return new Date(timestamp * 1000).toLocaleString('ru-RU', {
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}

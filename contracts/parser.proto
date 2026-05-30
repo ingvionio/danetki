@@ -5,75 +5,64 @@ package parser;
 option go_package = "github.com/danetka/contracts/parser";
 option csharp_namespace = "Danetka.Contracts.Parser";
 
-// ================================================================
-//  PARSER SERVICE
-//  Кто использует:
-//    - Gateway → StartParsing, GetStatus
-//  Сам публикует сообщения в Kafka топик stories.raw
-//  (см. contracts/kafka/story.raw.json)
-// ================================================================
-
 service ParserService {
-  // Запустить парсинг — асинхронная фоновая задача
-  // Клиент получает мгновенный ответ "принято в работу"
-  // Реальный парсинг идёт в фоне через Kafka
   rpc StartParsing (StartParsingRequest) returns (StartParsingResponse);
-
-  // Получить текущий статус фонового парсинга
   rpc GetStatus (GetStatusRequest) returns (GetStatusResponse);
+  rpc ListJobs (ListJobsRequest) returns (ListJobsResponse);
 }
 
-// ----------------------------------------------------------------
-//  StartParsing
-// ----------------------------------------------------------------
-
 message StartParsingRequest {
-  // Максимальное количество историй для парсинга за один запуск.
-  // 0 = без лимита (парсить всё что найдёт).
-  int32 limit = 1;
-
-  // Опционально — конкретный источник для парсинга.
-  // Пустая строка = парсить все настроенные источники.
-  // Пример: "https://detectivegames.ru/stories/criminal"
-  string source_url = 2;
+  int32  limit       = 1;  // max stories; 0 = unlimited
+  string source_url  = 2;  // optional source filter; empty = all
 }
 
 message StartParsingResponse {
-  string job_id  = 1;  // UUID запущенной задачи — для отслеживания статуса
-  string message = 2;  // человекочитаемое сообщение, например "parsing started"
+  string job_id  = 1;
+  string message = 2;
 }
 
-// ----------------------------------------------------------------
-//  GetStatus
-// ----------------------------------------------------------------
-
 message GetStatusRequest {
-  // Опционально — ID конкретной задачи из StartParsingResponse.
-  // Пустая строка = статус последней запущенной задачи.
-  string job_id = 1;
+  string job_id = 1;  // empty = latest job
 }
 
 message GetStatusResponse {
   string job_id        = 1;
-  Status status        = 2;  // текущий статус задачи
-  int32  total_found   = 3;  // историй найдено на сайтах
-  int32  total_queued  = 4;  // отправлено в Kafka (прошли фильтрацию)
-  int32  total_skipped = 5;  // пропущено (дубликаты или не подходят)
-  string error         = 6;  // сообщение об ошибке если status = FAILED
-  int64  started_at    = 7;  // Unix timestamp начала
-  int64  finished_at   = 8;  // Unix timestamp завершения, 0 если ещё идёт
+  Status status        = 2;
+  int32  total_found   = 3;
+  int32  total_queued  = 4;
+  int32  total_skipped = 5;
+  string error         = 6;
+  int64  started_at    = 7;
+  int64  finished_at   = 8;  // 0 if still running
+}
+
+message ListJobsRequest {
+  int32 page      = 1;
+  int32 page_size = 2;
+}
+
+message JobSummary {
+  string job_id        = 1;
+  Status status        = 2;
+  string source_url    = 3;
+  int32  limit         = 4;
+  int32  total_found   = 5;
+  int32  total_queued  = 6;
+  int32  total_skipped = 7;
+  string error         = 8;
+  int64  started_at    = 9;
+  int64  finished_at   = 10;
+}
+
+message ListJobsResponse {
+  repeated JobSummary jobs = 1;
+  int32                 total = 2;
+  int32                 page  = 3;
 }
 
 enum Status {
   STATUS_UNKNOWN  = 0;
-  STATUS_RUNNING  = 1;  // парсинг идёт
-  STATUS_DONE     = 2;  // завершён успешно
-  STATUS_FAILED   = 3;  // завершён с ошибкой
+  STATUS_RUNNING  = 1;
+  STATUS_DONE     = 2;
+  STATUS_FAILED   = 3;
 }
-
-// ----------------------------------------------------------------
-//  Ошибки:
-//    NOT_FOUND         — job_id не найден
-//    ALREADY_EXISTS    — парсинг уже запущен (предотвращение дублей)
-//    INTERNAL          — внутренняя ошибка
-// ----------------------------------------------------------------

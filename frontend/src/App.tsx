@@ -5,12 +5,21 @@ import { ParserControl } from './pages/ParserControl'
 import { PuzzlesList } from './pages/PuzzlesList'
 import { useAuthStore } from './store/authStore'
 
-function AdminRoute() {
+function AuthRoute() {
   const token = useAuthStore((s) => s.token)
+
+  if (!token) {
+    return <Navigate to="/login" replace />
+  }
+
+  return <Outlet />
+}
+
+function AdminRoute() {
   const role = useAuthStore((s) => s.role)
 
-  if (!token || role !== 'Admin') {
-    return <Navigate to="/login" replace />
+  if (role !== 'Admin') {
+    return <Navigate to="/admin/puzzles" replace />
   }
 
   return <Outlet />
@@ -22,11 +31,13 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
 
-        <Route element={<AdminRoute />}>
+        <Route element={<AuthRoute />}>
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<Navigate to="puzzles" replace />} />
             <Route path="puzzles" element={<PuzzlesList />} />
-            <Route path="parser" element={<ParserControl />} />
+            <Route element={<AdminRoute />}>
+              <Route path="parser" element={<ParserControl />} />
+            </Route>
           </Route>
         </Route>
 

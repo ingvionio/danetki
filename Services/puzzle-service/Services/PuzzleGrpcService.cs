@@ -40,6 +40,7 @@ public class PuzzleGrpcService : Danetka.Contracts.Puzzle.PuzzleService.PuzzleSe
             HiddenPart = request.HiddenPart,
             SourceUrl = request.SourceUrl,
             StoryId = request.StoryId,
+            JobId = request.JobId,
         };
 
         _dbContext.Puzzles.Add(entity);
@@ -52,6 +53,22 @@ public class PuzzleGrpcService : Danetka.Contracts.Puzzle.PuzzleService.PuzzleSe
             PuzzleId = entity.Id,
             Success = true,
         };
+    }
+
+    public override async Task<CountPuzzlesByJobResponse> CountPuzzlesByJob(
+        CountPuzzlesByJobRequest request,
+        ServerCallContext context)
+    {
+        if (string.IsNullOrWhiteSpace(request.JobId))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "job_id is required"));
+        }
+
+        var count = await _dbContext.Puzzles
+            .AsNoTracking()
+            .CountAsync(p => p.JobId == request.JobId, context.CancellationToken);
+
+        return new CountPuzzlesByJobResponse { Count = count };
     }
 
     public override async Task<PuzzleResponse> GetPuzzleById(GetPuzzleByIdRequest request, ServerCallContext context)
@@ -81,6 +98,31 @@ public class PuzzleGrpcService : Danetka.Contracts.Puzzle.PuzzleService.PuzzleSe
         await SetPuzzleCacheAsync(cacheKey, response, context.CancellationToken);
 
         return response;
+    }
+
+    public override async Task<RevealAnswerResponse> RevealPuzzleAnswer(
+        GetPuzzleByIdRequest request,
+        ServerCallContext context)
+    {
+        if (string.IsNullOrWhiteSpace(request.PuzzleId))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "puzzle_id is required"));
+        }
+
+        var puzzle = await _dbContext.Puzzles
+            .AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == request.PuzzleId, context.CancellationToken);
+
+        if (puzzle is null)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, $"Данетка с ID {request.PuzzleId} не найдена"));
+        }
+
+        return new RevealAnswerResponse
+        {
+            PuzzleId = puzzle.Id,
+            HiddenPart = puzzle.HiddenPart,
+        };
     }
 
     public override async Task<PuzzleResponse> GetRandomPuzzle(GetRandomPuzzleRequest request, ServerCallContext context)

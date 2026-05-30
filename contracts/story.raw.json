@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "StoryRaw",
-  "description": "Сообщение в топике stories.raw. Продюсер: Parser Service (Python). Консьюмер: AI Worker (C#).",
+  "description": "Raw story message payload for topic stories.raw",
 
   "topic": "stories.raw",
 
@@ -13,43 +13,43 @@
     "story_id": {
       "type": "string",
       "format": "uuid",
-      "description": "Уникальный ID истории, совпадает с _id документа в MongoDB"
+      "description": "Unique story identifier"
     },
 
     "job_id": {
       "type": "string",
       "format": "uuid",
-      "description": "ID задачи парсинга из которой получена история. Нужен для Saga — AI Worker включает его в ответ чтобы можно было отследить цепочку."
+      "description": "Unique job identifier for distributed tracing"
     },
 
     "text": {
       "type": "string",
       "minLength": 100,
-      "description": "Полный текст истории. Минимум 100 символов — более короткие отфильтрованы Parser'ом."
+      "description": "Full story text"
     },
 
     "source_url": {
       "type": "string",
       "format": "uri",
-      "description": "URL страницы откуда взята история"
+      "description": "Source page URL"
     },
 
     "source_title": {
       "type": "string",
-      "description": "Заголовок истории на сайте-источнике (если есть)"
+      "description": "Optional source page title"
     },
 
     "parsed_at": {
       "type": "string",
       "format": "date-time",
-      "description": "Время парсинга в формате ISO 8601, например 2025-01-15T10:30:00Z"
+      "description": "Parse timestamp (ISO 8601)"
     },
 
     "retry_count": {
       "type": "integer",
       "minimum": 0,
       "default": 0,
-      "description": "Количество предыдущих попыток обработки. AI Worker увеличивает это поле при повторной публикации в случае ошибки. Если retry_count >= 3 — сообщение отправляется в dead letter queue и не обрабатывается повторно."
+      "description": "Processing retry count; messages with retry_count >= 3 go to DLQ"
     }
   },
 

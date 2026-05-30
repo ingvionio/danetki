@@ -1,5 +1,5 @@
+# Runtime-only deps for Docker (grpc code is pre-generated in grpc_generated/)
 grpcio>=1.62.0
-grpcio-tools>=1.62.0
 protobuf>=5.26.0
 motor>=3.4.0
 confluent-kafka>=2.3.0

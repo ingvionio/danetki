@@ -8,6 +8,7 @@ namespace PuzzleService.Models
         public string HiddenPart { get; set; } = string.Empty;
         public string SourceUrl { get; set; } = string.Empty;
         public string StoryId { get; set; } = string.Empty;
+        public string JobId { get; set; } = string.Empty;
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

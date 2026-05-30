@@ -1,7 +1,5 @@
 namespace Danetka.AiWorker.Kafka;
 
-// DTO для сообщения в топике stories.raw.
-// Контракт: contracts/story.raw.json
 public class StoryRawMessage
 {
     public Guid StoryId { get; set; }

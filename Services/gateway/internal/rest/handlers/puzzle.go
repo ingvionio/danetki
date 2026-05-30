@@ -51,6 +51,27 @@ func (h *PuzzleHandler) GetByID(c *gin.Context) {
 	c.JSON(http.StatusOK, puzzleToJSON(response))
 }
 
+func (h *PuzzleHandler) RevealAnswer(c *gin.Context) {
+	puzzleID := c.Param("id")
+	if puzzleID == "" {
+		c.JSON(http.StatusBadRequest, ErrorResponse{Error: "puzzle id is required"})
+		return
+	}
+
+	response, err := h.clients.Puzzle.RevealPuzzleAnswer(c.Request.Context(), &puzzlepb.GetPuzzleByIdRequest{
+		PuzzleId: puzzleID,
+	})
+	if err != nil {
+		WriteGRPCError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"puzzle_id":   response.PuzzleId,
+		"hidden_part": response.HiddenPart,
+	})
+}
+
 func (h *PuzzleHandler) List(c *gin.Context) {
 	page := parsePositiveInt(c.DefaultQuery("page", strconv.Itoa(defaultPuzzlePage)), defaultPuzzlePage)
 	pageSize := parsePositiveInt(c.DefaultQuery("page_size", strconv.Itoa(defaultPuzzlePageSize)), defaultPuzzlePageSize)
@@ -82,6 +103,7 @@ func (h *PuzzleHandler) List(c *gin.Context) {
 func RegisterPuzzleRoutes(group *gin.RouterGroup, grpcClients *clients.Clients) {
 	handler := NewPuzzleHandler(grpcClients)
 	group.GET("/random", handler.GetRandom)
+	group.GET("/:id/answer", handler.RevealAnswer)
 	group.GET("/:id", handler.GetByID)
 	group.GET("", handler.List)
 }

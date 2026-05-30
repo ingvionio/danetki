@@ -23,6 +23,8 @@ namespace PuzzleService.Data
                 entity.Property(e => e.HiddenPart).HasColumnName("hidden_part").IsRequired();
                 entity.Property(e => e.SourceUrl).HasColumnName("source_url").IsRequired();
                 entity.Property(e => e.StoryId).HasColumnName("story_id");
+                entity.Property(e => e.JobId).HasColumnName("job_id");
+                entity.HasIndex(e => e.JobId);
                 entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("NOW()");
             });
         }

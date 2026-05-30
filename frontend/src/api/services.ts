@@ -30,9 +30,30 @@ export type ParserStatusResponse = {
   total_found: number
   total_queued: number
   total_skipped: number
+  puzzles_created: number
   error: string
   started_at: number
   finished_at: number
+}
+
+export type ParserJob = {
+  job_id: string
+  status: string
+  source_url: string
+  limit: number
+  total_found: number
+  total_queued: number
+  total_skipped: number
+  puzzles_created: number
+  error: string
+  started_at: number
+  finished_at: number
+}
+
+export type ParserJobsResponse = {
+  jobs: ParserJob[]
+  total: number
+  page: number
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
@@ -40,10 +61,20 @@ export async function login(email: string, password: string): Promise<LoginRespo
   return data
 }
 
+export type PuzzleAnswer = {
+  puzzle_id: string
+  hidden_part: string
+}
+
 export async function getPuzzles(page: number, pageSize: number): Promise<PuzzlesResponse> {
   const { data } = await apiClient.get<PuzzlesResponse>('/puzzles', {
     params: { page, page_size: pageSize },
   })
+  return data
+}
+
+export async function getPuzzleAnswer(puzzleId: string): Promise<PuzzleAnswer> {
+  const { data } = await apiClient.get<PuzzleAnswer>(`/puzzles/${puzzleId}/answer`)
   return data
 }
 
@@ -58,6 +89,13 @@ export async function startParser(limit: number, sourceUrl: string): Promise<Sta
 export async function getParserStatus(jobId: string): Promise<ParserStatusResponse> {
   const { data } = await apiClient.get<ParserStatusResponse>('/parser/status', {
     params: { job_id: jobId },
+  })
+  return data
+}
+
+export async function listParserJobs(page: number, pageSize: number): Promise<ParserJobsResponse> {
+  const { data } = await apiClient.get<ParserJobsResponse>('/parser/jobs', {
+    params: { page, page_size: pageSize },
   })
   return data
 }

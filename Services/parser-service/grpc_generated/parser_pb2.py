@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cparser.proto\x12\x06parser\"8\n\x13StartParsingRequest\x12\r\n\x05limit\x18\x01 \x01(\x05\x12\x12\n\nsource_url\x18\x02 \x01(\t\"7\n\x14StartParsingResponse\x12\x0e\n\x06job_id\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\"\"\n\x10GetStatusRequest\x12\x0e\n\x06job_id\x18\x01 \x01(\t\"\xbd\x01\n\x11GetStatusResponse\x12\x0e\n\x06job_id\x18\x01 \x01(\t\x12\x1e\n\x06status\x18\x02 \x01(\x0e\x32\x0e.parser.Status\x12\x13\n\x0btotal_found\x18\x03 \x01(\x05\x12\x14\n\x0ctotal_queued\x18\x04 \x01(\x05\x12\x15\n\rtotal_skipped\x18\x05 \x01(\x05\x12\r\n\x05\x65rror\x18\x06 \x01(\t\x12\x12\n\nstarted_at\x18\x07 \x01(\x03\x12\x13\n\x0b\x66inished_at\x18\x08 \x01(\x03*T\n\x06Status\x12\x12\n\x0eSTATUS_UNKNOWN\x10\x00\x12\x12\n\x0eSTATUS_RUNNING\x10\x01\x12\x0f\n\x0bSTATUS_DONE\x10\x02\x12\x11\n\rSTATUS_FAILED\x10\x03\x32\x9c\x01\n\rParserService\x12I\n\x0cStartParsing\x12\x1b.parser.StartParsingRequest\x1a\x1c.parser.StartParsingResponse\x12@\n\tGetStatus\x12\x18.parser.GetStatusRequest\x1a\x19.parser.GetStatusResponseB@Z#github.com/danetka/contracts/parser\xaa\x02\x18\x44\x61netka.Contracts.Parserb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cparser.proto\x12\x06parser\"8\n\x13StartParsingRequest\x12\r\n\x05limit\x18\x01 \x01(\x05\x12\x12\n\nsource_url\x18\x02 \x01(\t\"7\n\x14StartParsingResponse\x12\x0e\n\x06job_id\x18\x01 \x01(\t\x12\x0f\n\x07message\x18\x02 \x01(\t\"\"\n\x10GetStatusRequest\x12\x0e\n\x06job_id\x18\x01 \x01(\t\"\xbd\x01\n\x11GetStatusResponse\x12\x0e\n\x06job_id\x18\x01 \x01(\t\x12\x1e\n\x06status\x18\x02 \x01(\x0e\x32\x0e.parser.Status\x12\x13\n\x0btotal_found\x18\x03 \x01(\x05\x12\x14\n\x0ctotal_queued\x18\x04 \x01(\x05\x12\x15\n\rtotal_skipped\x18\x05 \x01(\x05\x12\r\n\x05\x65rror\x18\x06 \x01(\t\x12\x12\n\nstarted_at\x18\x07 \x01(\x03\x12\x13\n\x0b\x66inished_at\x18\x08 \x01(\x03\"2\n\x0fListJobsRequest\x12\x0c\n\x04page\x18\x01 \x01(\x05\x12\x11\n\tpage_size\x18\x02 \x01(\x05\"\xd9\x01\n\nJobSummary\x12\x0e\n\x06job_id\x18\x01 \x01(\t\x12\x1e\n\x06status\x18\x02 \x01(\x0e\x32\x0e.parser.Status\x12\x12\n\nsource_url\x18\x03 \x01(\t\x12\r\n\x05limit\x18\x04 \x01(\x05\x12\x13\n\x0btotal_found\x18\x05 \x01(\x05\x12\x14\n\x0ctotal_queued\x18\x06 \x01(\x05\x12\x15\n\rtotal_skipped\x18\x07 \x01(\x05\x12\r\n\x05\x65rror\x18\x08 \x01(\t\x12\x12\n\nstarted_at\x18\t \x01(\x03\x12\x13\n\x0b\x66inished_at\x18\n \x01(\x03\"Q\n\x10ListJobsResponse\x12 \n\x04jobs\x18\x01 \x03(\x0b\x32\x12.parser.JobSummary\x12\r\n\x05total\x18\x02 \x01(\x05\x12\x0c\n\x04page\x18\x03 \x01(\x05*T\n\x06Status\x12\x12\n\x0eSTATUS_UNKNOWN\x10\x00\x12\x12\n\x0eSTATUS_RUNNING\x10\x01\x12\x0f\n\x0bSTATUS_DONE\x10\x02\x12\x11\n\rSTATUS_FAILED\x10\x03\x32\xdb\x01\n\rParserService\x12I\n\x0cStartParsing\x12\x1b.parser.StartParsingRequest\x1a\x1c.parser.StartParsingResponse\x12@\n\tGetStatus\x12\x18.parser.GetStatusRequest\x1a\x19.parser.GetStatusResponse\x12=\n\x08ListJobs\x12\x17.parser.ListJobsRequest\x1a\x18.parser.ListJobsResponseB@Z#github.com/danetka/contracts/parser\xaa\x02\x18\x44\x61netka.Contracts.Parserb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -32,8 +32,8 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'parser_pb2', _globals)
 if not _descriptor._USE_C_DESCRIPTORS:
   _globals['DESCRIPTOR']._loaded_options = None
   _globals['DESCRIPTOR']._serialized_options = b'Z#github.com/danetka/contracts/parser\252\002\030Danetka.Contracts.Parser'
-  _globals['_STATUS']._serialized_start=367
-  _globals['_STATUS']._serialized_end=451
+  _globals['_STATUS']._serialized_start=722
+  _globals['_STATUS']._serialized_end=806
   _globals['_STARTPARSINGREQUEST']._serialized_start=24
   _globals['_STARTPARSINGREQUEST']._serialized_end=80
   _globals['_STARTPARSINGRESPONSE']._serialized_start=82
@@ -42,6 +42,12 @@ if not _descriptor._USE_C_DESCRIPTORS:
   _globals['_GETSTATUSREQUEST']._serialized_end=173
   _globals['_GETSTATUSRESPONSE']._serialized_start=176
   _globals['_GETSTATUSRESPONSE']._serialized_end=365
-  _globals['_PARSERSERVICE']._serialized_start=454
-  _globals['_PARSERSERVICE']._serialized_end=610
+  _globals['_LISTJOBSREQUEST']._serialized_start=367
+  _globals['_LISTJOBSREQUEST']._serialized_end=417
+  _globals['_JOBSUMMARY']._serialized_start=420
+  _globals['_JOBSUMMARY']._serialized_end=637
+  _globals['_LISTJOBSRESPONSE']._serialized_start=639
+  _globals['_LISTJOBSRESPONSE']._serialized_end=720
+  _globals['_PARSERSERVICE']._serialized_start=809
+  _globals['_PARSERSERVICE']._serialized_end=1028
 # @@protoc_insertion_point(module_scope)

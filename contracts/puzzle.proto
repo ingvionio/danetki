@@ -5,93 +5,63 @@ package puzzle;
 option go_package = "github.com/danetka/contracts/puzzle";
 option csharp_namespace = "Danetka.Contracts.Puzzle";
 
-// ================================================================
-//  PUZZLE SERVICE
-//  Кто использует:
-//    - Gateway    → GetRandomPuzzle, GetPuzzleById, ListPuzzles
-//    - AI Worker  → SavePuzzle (внутренний метод, не проходит через Gateway)
-// ================================================================
-
 service PuzzleService {
-  // Получить случайную данетку (для пользователя)
   rpc GetRandomPuzzle (GetRandomPuzzleRequest) returns (PuzzleResponse);
-
-  // Получить конкретную данетку по ID (для пользователя)
   rpc GetPuzzleById (GetPuzzleByIdRequest) returns (PuzzleResponse);
-
-  // Получить список данеток с пагинацией (для пользователя)
+  rpc RevealPuzzleAnswer (GetPuzzleByIdRequest) returns (RevealAnswerResponse);
   rpc ListPuzzles (ListPuzzlesRequest) returns (ListPuzzlesResponse);
-
-  // Сохранить готовую данетку — только для AI Worker
   rpc SavePuzzle (SavePuzzleRequest) returns (SavePuzzleResponse);
+  rpc CountPuzzlesByJob (CountPuzzlesByJobRequest) returns (CountPuzzlesByJobResponse);
 }
-
-// ----------------------------------------------------------------
-//  GetRandomPuzzle
-// ----------------------------------------------------------------
 
 message GetRandomPuzzleRequest {
-  // Опционально — исключить уже виденные пользователем данетки
-  repeated string exclude_ids = 1;
+  repeated string exclude_ids = 1;  // puzzle IDs to exclude
 }
-
-// ----------------------------------------------------------------
-//  GetPuzzleById
-// ----------------------------------------------------------------
 
 message GetPuzzleByIdRequest {
-  string puzzle_id = 1;  // UUID данетки
+  string puzzle_id = 1;
 }
 
-// ----------------------------------------------------------------
-//  ListPuzzles
-// ----------------------------------------------------------------
+message RevealAnswerResponse {
+  string puzzle_id   = 1;
+  string hidden_part = 2;
+}
 
 message ListPuzzlesRequest {
-  int32  page      = 1;  // номер страницы, начиная с 1
-  int32  page_size = 2;  // количество на странице, макс 50
+  int32 page      = 1;  // 1-based page number
+  int32 page_size = 2;  // max 50
 }
 
 message ListPuzzlesResponse {
   repeated PuzzleResponse puzzles = 1;
-  int32                   total   = 2;  // общее количество данеток в БД
+  int32                   total   = 2;
   int32                   page    = 3;
 }
 
-// ----------------------------------------------------------------
-//  Общая модель данетки — возвращается пользователю
-//  ВАЖНО: hidden_part здесь отсутствует намеренно.
-//  Закрытая часть никогда не покидает Puzzle Service
-//  через публичные методы.
-// ----------------------------------------------------------------
-
 message PuzzleResponse {
-  string puzzle_id   = 1;  // UUID
-  string open_part   = 2;  // текст загадки — то что видит игрок
-  string source_url  = 3;  // источник истории
-  int64  created_at  = 4;  // Unix timestamp создания
+  string puzzle_id   = 1;
+  string open_part   = 2;  // visible puzzle text
+  string source_url  = 3;
+  int64  created_at  = 4;  // Unix timestamp
 }
 
-// ----------------------------------------------------------------
-//  SavePuzzle — вызывается только AI Worker
-// ----------------------------------------------------------------
-
 message SavePuzzleRequest {
-  string open_part   = 1;  // открытая часть данетки
-  string hidden_part = 2;  // закрытая часть — хранится в БД, не отдаётся клиенту
-  string source_url  = 3;  // URL источника откуда взята история
-  string story_id    = 4;  // ID истории из MongoDB (для Saga — трассировка)
+  string open_part   = 1;
+  string hidden_part = 2;
+  string source_url  = 3;
+  string story_id    = 4;  // source story UUID
+  string job_id      = 5;  // parser job UUID
+}
+
+message CountPuzzlesByJobRequest {
+  string job_id = 1;
+}
+
+message CountPuzzlesByJobResponse {
+  int32 count = 1;
 }
 
 message SavePuzzleResponse {
-  string puzzle_id = 1;  // UUID созданной данетки
+  string puzzle_id = 1;
   bool   success   = 2;
 }
-
-// ----------------------------------------------------------------
-//  Ошибки:
-//    NOT_FOUND         — данетка с таким ID не найдена
-//    INVALID_ARGUMENT  — невалидные поля
-//    ALREADY_EXISTS    — данетка из этого source_url уже существует
-//    INTERNAL          — внутренняя ошибка
-// ----------------------------------------------------------------

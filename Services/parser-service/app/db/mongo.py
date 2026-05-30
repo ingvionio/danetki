@@ -66,3 +66,19 @@ class MongoRepository:
         if not jobs:
             return None
         return jobs[0]
+
+    async def list_jobs(self, page: int, page_size: int) -> tuple[list[dict[str, Any]], int]:
+        if self._collection is None:
+            raise RuntimeError("MongoDB is not connected")
+
+        jobs_collection = self._collection.database["parse_jobs"]
+        total = await jobs_collection.count_documents({})
+        skip = max(page - 1, 0) * page_size
+        cursor = (
+            jobs_collection.find({}, {"_id": 0})
+            .sort("started_at", -1)
+            .skip(skip)
+            .limit(page_size)
+        )
+        jobs = await cursor.to_list(length=page_size)
+        return jobs, total

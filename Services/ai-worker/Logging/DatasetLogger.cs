@@ -2,15 +2,11 @@ using System.Text.Json;
 
 namespace Danetka.AiWorker.Logging;
 
-// Пишет пары (вход → выход модели) в JSONL-файл.
-// Используется и для отладки, и как заготовка датасета на будущее
-// (если когда-то решим делать LoRA fine-tuning под наши данетки).
 public class DatasetLogger
 {
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        // Кириллица не должна экранироваться как \uXXXX:
         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
     };
 
@@ -39,7 +35,6 @@ public class DatasetLogger
         }
         catch (Exception ex)
         {
-            // Падение записи в датасет не должно валить обработку сообщения.
             _logger.LogWarning(ex, "Failed to append to dataset log at {Path}", _filePath);
         }
         finally

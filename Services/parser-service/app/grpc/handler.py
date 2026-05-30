@@ -63,6 +63,35 @@ class ParserServicer(parser_pb2_grpc.ParserServiceServicer):
             finished_at=job.get("finished_at", 0),
         )
 
+    async def ListJobs(
+        self,
+        request: parser_pb2.ListJobsRequest,
+        context: grpc.aio.ServicerContext,
+    ) -> parser_pb2.ListJobsResponse:
+        page_size = min(max(request.page_size, 1), 50)
+        page = max(request.page, 1)
+
+        jobs, total = await self._job_service.list_jobs(page, page_size)
+
+        response = parser_pb2.ListJobsResponse(total=total, page=page)
+        for job in jobs:
+            response.jobs.append(
+                parser_pb2.JobSummary(
+                    job_id=job["job_id"],
+                    status=self._map_status(job.get("status", "")),
+                    source_url=job.get("source_url", ""),
+                    limit=job.get("limit", 0),
+                    total_found=job.get("total_found", 0),
+                    total_queued=job.get("total_queued", 0),
+                    total_skipped=job.get("total_skipped", 0),
+                    error=job.get("error", ""),
+                    started_at=job.get("started_at", 0),
+                    finished_at=job.get("finished_at", 0),
+                )
+            )
+
+        return response
+
     @staticmethod
     def _map_status(status: str) -> int:
         mapping = {
