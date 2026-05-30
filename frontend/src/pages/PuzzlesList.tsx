@@ -2,6 +2,7 @@ import { Eye, EyeOff, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { getPuzzleAnswer, getPuzzles, type Puzzle } from '../api/services'
 import { CopyButton } from '../components/CopyButton'
+import { TelegramExportButton } from '../components/TelegramExportButton'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
 import { useCopyToClipboard } from '../lib/useCopyToClipboard'
@@ -19,6 +20,11 @@ function PuzzleCard({ puzzle }: PuzzleCardProps) {
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false)
   const [answerError, setAnswerError] = useState<string | null>(null)
 
+  function handleAnswerLoaded(answer: string) {
+    setHiddenPart(answer)
+    setRevealed(true)
+  }
+
   async function toggleAnswer() {
     if (revealed) {
       setRevealed(false)
@@ -35,8 +41,7 @@ function PuzzleCard({ puzzle }: PuzzleCardProps) {
 
     try {
       const data = await getPuzzleAnswer(puzzle.puzzle_id)
-      setHiddenPart(data.hidden_part)
-      setRevealed(true)
+      handleAnswerLoaded(data.hidden_part)
     } catch {
       setAnswerError('Не удалось загрузить ответ')
     } finally {
@@ -71,7 +76,7 @@ function PuzzleCard({ puzzle }: PuzzleCardProps) {
           <p className="mt-2 text-xs text-red-400">{answerError}</p>
         )}
       </div>
-      <div className="mt-4 flex items-center justify-between gap-3">
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="min-w-0 space-y-1">
           <p className="text-xs text-zinc-500">{formatUnixDate(puzzle.created_at)}</p>
           {puzzle.source_url && (
@@ -85,26 +90,34 @@ function PuzzleCard({ puzzle }: PuzzleCardProps) {
             </a>
           )}
         </div>
-        <Button
-          variant="secondary"
-          className="h-8 shrink-0 px-3 text-xs"
-          onClick={toggleAnswer}
-          disabled={isLoadingAnswer}
-        >
-          {isLoadingAnswer ? (
-            'Загрузка...'
-          ) : revealed ? (
-            <>
-              <EyeOff className="h-3.5 w-3.5" />
-              Скрыть ответ
-            </>
-          ) : (
-            <>
-              <Eye className="h-3.5 w-3.5" />
-              Показать ответ
-            </>
-          )}
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <TelegramExportButton
+            puzzle={puzzle}
+            hiddenPart={hiddenPart}
+            onAnswerLoaded={handleAnswerLoaded}
+            copyKey={`${puzzle.puzzle_id}-telegram`}
+          />
+          <Button
+            variant="secondary"
+            className="h-8 shrink-0 px-3 text-xs"
+            onClick={toggleAnswer}
+            disabled={isLoadingAnswer}
+          >
+            {isLoadingAnswer ? (
+              'Загрузка...'
+            ) : revealed ? (
+              <>
+                <EyeOff className="h-3.5 w-3.5" />
+                Скрыть ответ
+              </>
+            ) : (
+              <>
+                <Eye className="h-3.5 w-3.5" />
+                Показать ответ
+              </>
+            )}
+          </Button>
+        </div>
       </div>
     </Card>
   )

@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { getPuzzleAnswer, getRandomPuzzle, type Puzzle } from '../api/services'
 import { CopyButton } from '../components/CopyButton'
+import { TelegramExportButton } from '../components/TelegramExportButton'
 import { Button } from '../components/ui/Button'
 import { useCopyToClipboard } from '../lib/useCopyToClipboard'
 import { cn } from '../lib/utils'
@@ -143,7 +144,16 @@ export function PlayPage() {
                 </a>
               )}
 
-              <div className="mt-6 flex justify-center">
+              <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+                <TelegramExportButton
+                  puzzle={puzzle}
+                  hiddenPart={hiddenPart}
+                  onAnswerLoaded={(answer) => {
+                    setHiddenPart(answer)
+                    setRevealed(true)
+                  }}
+                  copyKey="telegram"
+                />
                 <Button
                   variant="secondary"
                   onClick={toggleAnswer}
