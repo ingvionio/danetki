@@ -9,6 +9,9 @@ public class RouterAiLlmClient : ILlmClient
 {
     private const string BaseUrl = "https://routerai.ru/api/v1";
     private const string Model = "deepseek/deepseek-v4-flash";
+    private const double DefaultTemperature = 0.2;
+    private const int DefaultMaxTokens = 2048;
+    private const int EvaluationMaxTokens = 512;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -42,8 +45,8 @@ public class RouterAiLlmClient : ILlmClient
                 new ChatMessage("system", Prompts.SplitStorySystemPrompt),
                 new ChatMessage("user", storyText),
             ],
-            Temperature: 0.2,
-            MaxTokens: 2048,
+            Temperature: DefaultTemperature,
+            MaxTokens: DefaultMaxTokens,
             ResponseFormat: new ResponseFormat("json_object"));
 
         _logger.LogDebug("Sending to RouterAI: model={Model} textLen={Len}", Model, storyText.Length);
@@ -78,8 +81,8 @@ public class RouterAiLlmClient : ILlmClient
                 new ChatMessage("system", Prompts.EvaluatePuzzleSystemPrompt),
                 new ChatMessage("user", userMessage),
             ],
-            Temperature: 0.2,
-            MaxTokens: 512,
+            Temperature: DefaultTemperature,
+            MaxTokens: EvaluationMaxTokens,
             ResponseFormat: new ResponseFormat("json_object"));
 
         _logger.LogDebug("Evaluating puzzle via RouterAI: model={Model}", Model);

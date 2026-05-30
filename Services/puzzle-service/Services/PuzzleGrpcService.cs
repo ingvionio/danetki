@@ -13,6 +13,9 @@ public class PuzzleGrpcService : Danetka.Contracts.Puzzle.PuzzleService.PuzzleSe
 {
     private const int PuzzleByIdCacheMinutes = 10;
     private const int ListPuzzlesCacheMinutes = 5;
+    private const int MinPageSize = 1;
+    private const int MaxPageSize = 50;
+    private const int DefaultPage = 1;
     private const string ListCacheKeyPattern = "Puzzle_puzzles_page_*";
 
     private readonly PuzzleDbContext _dbContext;
@@ -148,8 +151,8 @@ public class PuzzleGrpcService : Danetka.Contracts.Puzzle.PuzzleService.PuzzleSe
 
     public override async Task<ListPuzzlesResponse> ListPuzzles(ListPuzzlesRequest request, ServerCallContext context)
     {
-        var pageSize = Math.Clamp(request.PageSize, 1, 50);
-        var page = Math.Max(request.Page, 1);
+        var pageSize = Math.Clamp(request.PageSize, MinPageSize, MaxPageSize);
+        var page = Math.Max(request.Page, DefaultPage);
 
         var cacheKey = BuildListCacheKey(page, pageSize);
         var cachedResponse = await TryGetListFromCacheAsync(cacheKey, context.CancellationToken);

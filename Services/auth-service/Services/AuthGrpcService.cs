@@ -58,7 +58,6 @@ public class AuthGrpcService(
 
         logger.LogInformation("Successfully registered user: {UserId}", user.Id);
 
-        // 5. Генерация JWT токена
         var (token, expiresAt) = GenerateJwtToken(user);
 
         return new AuthResponse

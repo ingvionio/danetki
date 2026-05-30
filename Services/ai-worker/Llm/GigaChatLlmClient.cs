@@ -13,6 +13,9 @@ public class GigaChatLlmClient : ILlmClient
 
     private const string OauthUrl = "https://ngw.devices.sberbank.ru:9443/api/v2/oauth";
     private const string ChatUrl  = "https://gigachat.devices.sberbank.ru/api/v1/chat/completions";
+    private const double DefaultTemperature = 0.2;
+    private const int DefaultMaxTokens = 2048;
+    private const int EvaluationMaxTokens = 512;
 
     private readonly HttpClient _http;
     private readonly ILogger<GigaChatLlmClient> _logger;
@@ -47,8 +50,8 @@ public class GigaChatLlmClient : ILlmClient
                 new GigaChatMessage("system", Prompts.SplitStorySystemPrompt),
                 new GigaChatMessage("user", storyText),
             ],
-            Temperature: 0.2,
-            MaxTokens: 2048);
+            Temperature: DefaultTemperature,
+            MaxTokens: DefaultMaxTokens);
 
         _logger.LogDebug("Sending to GigaChat: model={Model} textLen={Len}", _model, storyText.Length);
 
@@ -93,8 +96,8 @@ public class GigaChatLlmClient : ILlmClient
                 new GigaChatMessage("system", Prompts.EvaluatePuzzleSystemPrompt),
                 new GigaChatMessage("user", userMessage),
             ],
-            Temperature: 0.2,
-            MaxTokens: 512);
+            Temperature: DefaultTemperature,
+            MaxTokens: EvaluationMaxTokens);
 
         _logger.LogDebug("Evaluating puzzle via GigaChat: model={Model}", _model);
 
@@ -126,14 +129,12 @@ public class GigaChatLlmClient : ILlmClient
 
     private async Task<string> GetAccessTokenAsync(CancellationToken ct)
     {
-        // Быстрая проверка без захвата лока
         if (_accessToken is not null && _tokenExpiry - TimeSpan.FromMinutes(1) > DateTimeOffset.UtcNow)
             return _accessToken;
 
         await _tokenLock.WaitAsync(ct);
         try
         {
-            // Повторная проверка после захвата лока (double-checked locking)
             if (_accessToken is not null && _tokenExpiry - TimeSpan.FromMinutes(1) > DateTimeOffset.UtcNow)
                 return _accessToken;
 
@@ -166,8 +167,6 @@ public class GigaChatLlmClient : ILlmClient
         }
     }
 
-    // Пытается вытащить JSON-объект из ответа модели.
-    // Терпит markdown-обёртки ```json ... ``` и лишний текст вокруг.
     private static string ExtractJson(string text)
     {
         text = text.Trim();
@@ -188,8 +187,6 @@ public class GigaChatLlmClient : ILlmClient
 
         return text;
     }
-
-    // ----- DTOs запроса/ответа -----
 
     private record GigaChatRequest(
         string Model,
