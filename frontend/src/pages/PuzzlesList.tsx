@@ -1,8 +1,10 @@
 import { Eye, EyeOff, RefreshCw } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { getPuzzleAnswer, getPuzzles, type Puzzle } from '../api/services'
+import { CopyButton } from '../components/CopyButton'
 import { Button } from '../components/ui/Button'
 import { Card } from '../components/ui/Card'
+import { useCopyToClipboard } from '../lib/useCopyToClipboard'
 import { formatUnixDate } from '../lib/utils'
 import { useAuthStore } from '../store/authStore'
 
@@ -11,6 +13,7 @@ type PuzzleCardProps = {
 }
 
 function PuzzleCard({ puzzle }: PuzzleCardProps) {
+  const { copiedKey, copy } = useCopyToClipboard()
   const [revealed, setRevealed] = useState(false)
   const [hiddenPart, setHiddenPart] = useState<string | null>(null)
   const [isLoadingAnswer, setIsLoadingAnswer] = useState(false)
@@ -44,21 +47,47 @@ function PuzzleCard({ puzzle }: PuzzleCardProps) {
   return (
     <Card className="flex flex-col justify-between">
       <div>
-        <p className="text-sm leading-relaxed text-zinc-200">{puzzle.open_part}</p>
+        <div className="relative">
+          <CopyButton
+            active={copiedKey === `${puzzle.puzzle_id}-open`}
+            onClick={() => copy(`${puzzle.puzzle_id}-open`, puzzle.open_part)}
+            label="Скопировать пост"
+            className="absolute right-0 top-0"
+          />
+          <p className="pr-8 text-sm leading-relaxed text-zinc-200">{puzzle.open_part}</p>
+        </div>
         {revealed && hiddenPart && (
-          <p className="mt-3 rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-2 text-sm leading-relaxed text-amber-200/90">
-            {hiddenPart}
-          </p>
+          <div className="relative mt-3 rounded-lg border border-zinc-700/60 bg-zinc-900/60 px-3 py-2">
+            <CopyButton
+              active={copiedKey === `${puzzle.puzzle_id}-answer`}
+              onClick={() => copy(`${puzzle.puzzle_id}-answer`, hiddenPart)}
+              label="Скопировать ответ"
+              className="absolute right-1 top-1"
+            />
+            <p className="pr-8 text-sm leading-relaxed text-amber-200/90">{hiddenPart}</p>
+          </div>
         )}
         {answerError && (
           <p className="mt-2 text-xs text-red-400">{answerError}</p>
         )}
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
-        <p className="text-xs text-zinc-500">{formatUnixDate(puzzle.created_at)}</p>
+        <div className="min-w-0 space-y-1">
+          <p className="text-xs text-zinc-500">{formatUnixDate(puzzle.created_at)}</p>
+          {puzzle.source_url && (
+            <a
+              href={puzzle.source_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block truncate text-xs text-indigo-400 hover:text-indigo-300"
+            >
+              Источник
+            </a>
+          )}
+        </div>
         <Button
           variant="secondary"
-          className="h-8 px-3 text-xs"
+          className="h-8 shrink-0 px-3 text-xs"
           onClick={toggleAnswer}
           disabled={isLoadingAnswer}
         >
