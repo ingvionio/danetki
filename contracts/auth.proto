@@ -10,11 +10,14 @@ service AuthService {
   rpc Login (LoginRequest) returns (AuthResponse);
   rpc ValidateToken (ValidateTokenRequest) returns (ValidateTokenResponse);
   rpc GetUser (GetUserRequest) returns (UserResponse);
+  rpc ListUsers (ListUsersRequest) returns (ListUsersResponse);
+  rpc AddTokens (AddTokensRequest) returns (UserResponse);
+  rpc ConsumeToken (ConsumeTokenRequest) returns (ConsumeTokenResponse);
 }
 
 message RegisterRequest {
   string email    = 1;
-  string password = 2;  // min 8 chars, hashed server-side
+  string password = 2;
   string username = 3;
 }
 
@@ -25,7 +28,7 @@ message LoginRequest {
 
 message AuthResponse {
   string user_id    = 1;
-  string token      = 2;  // JWT access token
+  string token      = 2;
   int64  expires_at = 3;
 }
 
@@ -50,9 +53,31 @@ enum Role {
 }
 
 message UserResponse {
-  string user_id    = 1;
-  string email      = 2;
-  string username   = 3;
-  int64  created_at = 4;
-  Role   role       = 5;
+  string user_id           = 1;
+  string email             = 2;
+  string username          = 3;
+  int64  created_at        = 4;
+  Role   role              = 5;
+  int32  tokens            = 6;
+  string subscription_plan = 7;
+}
+
+message ListUsersRequest {}
+
+message ListUsersResponse {
+  repeated UserResponse users = 1;
+}
+
+message AddTokensRequest {
+  string user_id = 1;
+  int32  amount  = 2;
+}
+
+message ConsumeTokenRequest {
+  string user_id = 1;
+}
+
+message ConsumeTokenResponse {
+  bool  success           = 1;
+  int32 remaining_tokens  = 2;
 }

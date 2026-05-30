@@ -30,6 +30,17 @@ public class AuthDbContext(DbContextOptions<AuthDbContext> options) : DbContext(
                 .IsRequired()
                 .HasMaxLength(50)
                 .HasDefaultValue("User");
+
+            entity.Property(e => e.Tokens)
+                .HasColumnName("tokens")
+                .IsRequired()
+                .HasDefaultValue(5);
+
+            entity.Property(e => e.SubscriptionPlan)
+                .HasColumnName("subscription_plan")
+                .IsRequired()
+                .HasMaxLength(50)
+                .HasDefaultValue("Trial");
             
             entity.Property(e => e.CreatedAt).HasColumnName("created_at").HasDefaultValueSql("NOW()");
             entity.Property(e => e.UpdatedAt).HasColumnName("updated_at").HasDefaultValueSql("NOW()");

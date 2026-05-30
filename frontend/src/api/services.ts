@@ -6,6 +6,25 @@ export type LoginResponse = {
   expires_at: number
 }
 
+export type User = {
+  user_id: string
+  email: string
+  username: string
+  created_at: number
+  role: string
+  tokens: number
+  subscription_plan: string
+}
+
+export type ConsumeTokenResponse = {
+  success: boolean
+  remaining_tokens: number
+}
+
+export type UsersResponse = {
+  users: User[]
+}
+
 export type Puzzle = {
   puzzle_id: string
   open_part: string
@@ -58,6 +77,26 @@ export type ParserJobsResponse = {
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
   const { data } = await apiClient.post<LoginResponse>('/auth/login', { email, password })
+  return data
+}
+
+export async function getMe(): Promise<User> {
+  const { data } = await apiClient.get<User>('/auth/me')
+  return data
+}
+
+export async function consumeToken(): Promise<ConsumeTokenResponse> {
+  const { data } = await apiClient.post<ConsumeTokenResponse>('/auth/me/consume')
+  return data
+}
+
+export async function getUsers(): Promise<UsersResponse> {
+  const { data } = await apiClient.get<UsersResponse>('/admin/users')
+  return data
+}
+
+export async function addTokens(userId: string, amount: number): Promise<User> {
+  const { data } = await apiClient.post<User>(`/admin/users/${userId}/tokens`, { amount })
   return data
 }
 

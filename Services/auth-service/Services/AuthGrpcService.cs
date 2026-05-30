@@ -201,13 +201,94 @@ public class AuthGrpcService(
             throw new RpcException(new Status(StatusCode.NotFound, "User not found."));
         }
 
+        return MapToUserResponse(user);
+    }
+
+    public override async Task<ListUsersResponse> ListUsers(ListUsersRequest request, ServerCallContext context)
+    {
+        var users = await dbContext.Users
+            .AsNoTracking()
+            .OrderBy(u => u.CreatedAt)
+            .ToListAsync(context.CancellationToken);
+
+        var response = new ListUsersResponse();
+        response.Users.AddRange(users.Select(MapToUserResponse));
+        return response;
+    }
+
+    public override async Task<UserResponse> AddTokens(AddTokensRequest request, ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.UserId, out var userGuid))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid user_id format. Must be UUID."));
+        }
+
+        if (request.Amount <= 0)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Amount must be greater than zero."));
+        }
+
+        var user = await dbContext.Users
+            .FirstOrDefaultAsync(u => u.Id == userGuid, context.CancellationToken);
+
+        if (user == null)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, "User not found."));
+        }
+
+        user.Tokens += request.Amount;
+        user.UpdatedAt = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(context.CancellationToken);
+
+        return MapToUserResponse(user);
+    }
+
+    public override async Task<ConsumeTokenResponse> ConsumeToken(ConsumeTokenRequest request, ServerCallContext context)
+    {
+        if (!Guid.TryParse(request.UserId, out var userGuid))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "Invalid user_id format. Must be UUID."));
+        }
+
+        var user = await dbContext.Users
+            .FirstOrDefaultAsync(u => u.Id == userGuid, context.CancellationToken);
+
+        if (user == null)
+        {
+            throw new RpcException(new Status(StatusCode.NotFound, "User not found."));
+        }
+
+        if (user.Tokens <= 0)
+        {
+            return new ConsumeTokenResponse
+            {
+                Success = false,
+                RemainingTokens = user.Tokens
+            };
+        }
+
+        user.Tokens -= 1;
+        user.UpdatedAt = DateTime.UtcNow;
+        await dbContext.SaveChangesAsync(context.CancellationToken);
+
+        return new ConsumeTokenResponse
+        {
+            Success = true,
+            RemainingTokens = user.Tokens
+        };
+    }
+    
+    private static UserResponse MapToUserResponse(User user)
+    {
         return new UserResponse
         {
             UserId = user.Id.ToString(),
             Email = user.Email,
             Username = user.Username,
             CreatedAt = ((DateTimeOffset)user.CreatedAt).ToUnixTimeSeconds(),
-            Role = MapToProtoRole(user.Role)
+            Role = MapToProtoRole(user.Role),
+            Tokens = user.Tokens,
+            SubscriptionPlan = user.SubscriptionPlan
         };
     }
     

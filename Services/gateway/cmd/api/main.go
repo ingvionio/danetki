@@ -49,6 +49,15 @@ func registerRoutes(api *gin.RouterGroup, grpcClients *clients.Clients) {
 	authGroup := api.Group("/auth")
 	handlers.RegisterAuthRoutes(authGroup, grpcClients)
 
+	authProtected := api.Group("/auth")
+	authProtected.Use(middleware.Auth(grpcClients))
+	handlers.RegisterProtectedAuthRoutes(authProtected, grpcClients)
+
+	adminUsersGroup := api.Group("/admin/users")
+	adminUsersGroup.Use(middleware.Auth(grpcClients))
+	adminUsersGroup.Use(middleware.RequireAdmin())
+	handlers.RegisterAdminUserRoutes(adminUsersGroup, grpcClients)
+
 	puzzleGroup := api.Group("/puzzles")
 	handlers.RegisterPuzzleRoutes(puzzleGroup, grpcClients)
 

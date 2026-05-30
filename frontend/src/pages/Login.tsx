@@ -25,7 +25,7 @@ export function Login() {
       const response = await login(email, password)
       const role = decodeJwtRole(response.token)
       setAuth(response.token, role)
-      navigate(role === 'Admin' ? '/admin/puzzles' : '/')
+      navigate(role === 'Admin' ? '/admin/puzzles' : '/dashboard')
     } catch {
       setError('Неверный email или пароль')
     } finally {
@@ -38,7 +38,7 @@ export function Login() {
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-white">Danetka</h1>
-          <p className="mt-2 text-sm text-zinc-500">Вход в панель администратора</p>
+          <p className="mt-2 text-sm text-zinc-500">Вход в личный кабинет</p>
         </div>
 
         <Card>

@@ -1,4 +1,4 @@
-import { BookOpen, LogOut, ScanSearch } from 'lucide-react'
+import { BookOpen, LogOut, ScanSearch, Users } from 'lucide-react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { cn } from '../lib/utils'
 import { useAuthStore } from '../store/authStore'
@@ -7,6 +7,7 @@ import { Button } from '../components/ui/Button'
 const navItems = [
   { to: '/admin/puzzles', label: 'Данетки', icon: BookOpen },
   { to: '/admin/parser', label: 'Парсер', icon: ScanSearch },
+  { to: '/admin/users', label: 'Пользователи', icon: Users },
 ]
 
 export function AdminLayout() {
