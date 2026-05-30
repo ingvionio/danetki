@@ -57,7 +57,7 @@ class FactroomScraper:
         soup = BeautifulSoup(html, "html.parser")
         links: list[str] = []
 
-        for anchor in soup.select("article a[href], .post-title a[href], h2 a[href]"):
+        for anchor in soup.select("a.new-text-post[href], .feed-picture-fact a[href], .right-sidebar-post[href]"):
             if not isinstance(anchor, Tag):
                 continue
 
@@ -98,7 +98,7 @@ class FactroomScraper:
             return None
 
         content_tag = soup.select_one(
-            ".entry-content, .post-content, article .content, .text-content"
+            ".post-box-text, .entry-content, .post-content, article .content, .text-content"
         )
         if content_tag is None:
             return None
