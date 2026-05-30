@@ -13,6 +13,9 @@ namespace Danetka.AiWorker;
 public class Worker : BackgroundService
 {
     private const int MaxRetries = 3;
+    private const int MinQualityScore = 7;
+    private const int ConsumeErrorDelaySeconds = 2;
+    private const int ProducerFlushSeconds = 5;
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -100,14 +103,16 @@ public class Worker : BackgroundService
                 catch (ConsumeException ex)
                 {
                     _logger.LogWarning("Consume error: {Reason}", ex.Error.Reason);
-                    await Task.Delay(TimeSpan.FromSeconds(2), stoppingToken);
+                    await Task.Delay(TimeSpan.FromSeconds(ConsumeErrorDelaySeconds), stoppingToken);
                 }
             }
         }
-        catch (OperationCanceledException) { /* graceful */ }
+        catch (OperationCanceledException)
+        {
+        }
         finally
         {
-            producer.Flush(TimeSpan.FromSeconds(5));
+            producer.Flush(TimeSpan.FromSeconds(ProducerFlushSeconds));
             consumer.Close();
         }
     }
@@ -176,7 +181,7 @@ public class Worker : BackgroundService
                 "Puzzle evaluated: score={Score} reason={Reason}",
                 evaluationResult.Score, evaluationResult.Reason);
 
-            if (evaluationResult.Score < 7)
+            if (evaluationResult.Score < MinQualityScore)
             {
                 throw new InvalidOperationException(
                     $"LLM Quality too low ({evaluationResult.Score}/10): {evaluationResult.Reason}");

@@ -16,6 +16,7 @@ public class GigaChatLlmClient : ILlmClient
     private const double DefaultTemperature = 0.2;
     private const int DefaultMaxTokens = 2048;
     private const int EvaluationMaxTokens = 512;
+    private const int TokenExpirySkewMinutes = 1;
 
     private readonly HttpClient _http;
     private readonly ILogger<GigaChatLlmClient> _logger;
@@ -129,13 +130,13 @@ public class GigaChatLlmClient : ILlmClient
 
     private async Task<string> GetAccessTokenAsync(CancellationToken ct)
     {
-        if (_accessToken is not null && _tokenExpiry - TimeSpan.FromMinutes(1) > DateTimeOffset.UtcNow)
+        if (_accessToken is not null && _tokenExpiry - TimeSpan.FromMinutes(TokenExpirySkewMinutes) > DateTimeOffset.UtcNow)
             return _accessToken;
 
         await _tokenLock.WaitAsync(ct);
         try
         {
-            if (_accessToken is not null && _tokenExpiry - TimeSpan.FromMinutes(1) > DateTimeOffset.UtcNow)
+            if (_accessToken is not null && _tokenExpiry - TimeSpan.FromMinutes(TokenExpirySkewMinutes) > DateTimeOffset.UtcNow)
                 return _accessToken;
 
             _logger.LogInformation("Requesting new GigaChat access token");

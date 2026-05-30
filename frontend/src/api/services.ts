@@ -66,6 +66,11 @@ export type PuzzleAnswer = {
   hidden_part: string
 }
 
+export async function getRandomPuzzle(): Promise<Puzzle> {
+  const { data } = await apiClient.get<Puzzle>('/puzzles/random')
+  return data
+}
+
 export async function getPuzzles(page: number, pageSize: number): Promise<PuzzlesResponse> {
   const { data } = await apiClient.get<PuzzlesResponse>('/puzzles', {
     params: { page, page_size: pageSize },
