@@ -26,5 +26,5 @@ func NewRouter(reg discovery.Registry, cfg *config.Config) http.Handler {
 	mux.Handle("/parser/start", authMiddleware(http.HandlerFunc(parserHandler.Start)))
 	mux.Handle("/parser/status", authMiddleware(http.HandlerFunc(parserHandler.Status)))
 
-	return mux
+	return middleware.CORSMiddleware(mux)
 }
